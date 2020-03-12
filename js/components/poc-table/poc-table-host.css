@@ -1,0 +1,35 @@
+poc-tr {
+    display: flex;
+}
+
+poc-td,
+poc-th {
+    flex: 1;
+}
+
+poc-td {
+    padding: 10px 12px;
+}
+
+
+poc-td[is-head="true"] {
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: bottom;
+    font-size: 12px;
+    font-weight: normal;
+    color: #999;
+    text-transform: uppercase;
+}
+
+poc-tr:nth-of-type(2n+1) {
+    background: #f8f8f8;
+}
+
+poc-tr {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+poc-tr:last-child {
+    border-bottom: none;
+}

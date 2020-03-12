@@ -1,0 +1,19 @@
+{
+  "name": "xmind_frontend_interview",
+  "version": "1.0.0",
+  "description": "XMind 前端面试大作业",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kirakiray/xmind_frontend_interview.git"
+  },
+  "author": "YAO",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kirakiray/xmind_frontend_interview/issues"
+  },
+  "homepage": "https://github.com/kirakiray/xmind_frontend_interview#readme"
+}
