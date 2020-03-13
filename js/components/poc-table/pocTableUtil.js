@@ -37,9 +37,9 @@ define(() => {
             switch (type) {
                 case "TYPE":
                     if (text == 0) {
-                        valueText = "收入";
-                    } else if (text == 1) {
                         valueText = "支出";
+                    } else if (text == 1) {
+                        valueText = "收入";
                     }
                     break;
                 case "TIME":
@@ -48,13 +48,14 @@ define(() => {
                 case "CATEGORY":
                     let categoryData = categoryMap.get(text);
                     if (categoryData) {
-                        valueText = categoryData.name + `(${categoryData.type == 1 ? '支出' : '收入'})`;
+                        valueText = categoryData.name + `(${categoryData.type == 1 ? '收入' : '支出'})`;
                     } else {
                         valueText = "不明分类";
                         console.warn("不明分类ID =>", text);
                     }
                     break;
                 case "AMOUNT":
+                    valueText = parseFloat(text).toFixed(2);
                     break;
             }
 

@@ -8,12 +8,11 @@ poc-th {
 }
 
 poc-td {
-    padding: 10px 12px;
+    padding: 0 12px;
 }
 
 
 poc-td[is-head="true"] {
-    padding: 10px 12px;
     text-align: left;
     vertical-align: bottom;
     font-size: 12px;
@@ -22,14 +21,24 @@ poc-td[is-head="true"] {
     text-transform: uppercase;
 }
 
-poc-tr:nth-of-type(2n+1) {
+poc-tr:first-child {
     background: #f8f8f8;
 }
 
+/* poc-tr:nth-of-type(2n+1) {
+    background: #f8f8f8;
+} */
+
 poc-tr {
+    height: 43px;
+    line-height: 43px;
     border-bottom: 1px solid #e5e5e5;
+    overflow: hidden;
+    transition: all ease .2s;
 }
 
-poc-tr:last-child {
-    border-bottom: none;
+poc-tr[hide="true"] {
+    height: 0;
+    opacity: 0;
+    border-bottom: 0 solid transparent;
 }

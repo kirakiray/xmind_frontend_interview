@@ -1,0 +1,81 @@
+<style>
+    :host {
+        display: block;
+        position: fixed;
+        left: 100px;
+        top: 100px;
+        padding: 0 20px 20px;
+        box-shadow: rgba(0, 0, 0, .1) 0 0 5px;
+    }
+
+    .pannel_line {
+        margin-top: 10px;
+    }
+
+    h3 {
+        padding: 0;
+        margin: 20px 0 10px;
+        font-size: 16px;
+    }
+
+    .label {
+        font-size: 14px;
+    }
+</style>
+
+<h3>筛选</h3>
+<div class="pannel_line">
+    <label class="label">TYPE</label>
+    <select xv-model="sType">
+        <option value="all">收入和支出</option>
+        <option value="0">支出</option>
+        <option value="1">收入</option>
+    </select>
+</div>
+<div class="pannel_line">
+    <label class="label">选择月份</label>
+    <select xv-model="sTime" xv-tar="monthEle">
+        <option value="all">所有</option>
+    </select>
+</div>
+<div class="pannel_line">
+    <label class="label">选择类别</label>
+    <select xv-model="sCate" xv-tar="cateEle">
+        <option value="all">所有</option>
+    </select>
+</div>
+<div class="pannel_line">
+    <label class="label">排序</label>
+    <select xv-model="sortType">
+        <option value="default">添加顺序</option>
+        <option value="time">时间顺序</option>
+        <option value="timeRev">时间倒序</option>
+    </select>
+</div>
+<hr>
+
+<h3>新增账单</h3>
+<div class="pannel_line">
+    <!-- <label class="label">账单类型</label> -->
+    <select xv-model="fType">
+        <option value="">请选择账单类型</option>
+        <option value="0">支出</option>
+        <option value="1">收入</option>
+    </select>
+</div>
+<div class="pannel_line">
+    <!-- <label class="label">时间</label> -->
+    <input type="date" xv-model="fTime">
+</div>
+<div class="pannel_line">
+    <!-- <label class="label">类别</label> -->
+    <select xv-tar="cateSelector" xv-model="fCate">
+        <option value="">请选择类别</option>
+    </select>
+</div>
+<div class="pannel_line">
+    <!-- <label class="label">金额</label> -->
+    <input type="number" placeholder="请输入金额" xv-model="fAmount">
+</div>
+<br>
+<button @click="addItem">点击按钮添加账单</button>
