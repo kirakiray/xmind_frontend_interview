@@ -25,6 +25,8 @@ ofa = async () => {
     // 打开显示
     $("poc-table").display = "";
 
+    $(".loading_con").display = "none";
+
     // 刷新统计
     $("poc-table").reloadAmount();
 
