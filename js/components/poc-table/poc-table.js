@@ -10,7 +10,54 @@ Component(async (load) => {
         hostcss: "./poc-table-host.css",
         data: {
             amount: 1000,
-            _old_monthSets: ""
+            _old_monthSets: "",
+            // 下面为left-pannel同步过来的数据
+            // 排序类型
+            sortType: "",
+            // 类型
+            sType: "",
+            // 时间
+            sTime: "",
+            // 类别
+            sCate: "",
+        },
+        watch: {
+            // 通过根据sortType监听变动
+            sortType(e, sortType) {
+                this.display = "none";
+                switch (sortType) {
+                    case "time":
+                        this.forEach((tr, i) => {
+                            if (i == 0) return;
+
+                            tr.style.order = parseInt(tr[1].val / 86400000);
+                        });
+                        break;
+                    case "timeRev":
+                        this.forEach((tr, i) => {
+                            if (i == 0) return;
+
+                            tr.style.order = -parseInt(tr[1].val / 86400000);
+                        });
+
+                        break;
+                    default:
+                        this.forEach((tr, i) => {
+                            if (i == 0) return;
+                            tr.style.order = null
+                        });
+                }
+                this.display = "";
+            },
+            sTime() {
+                this.refreshList();
+            },
+            sType() {
+                this.refreshList();
+            },
+            sCate() {
+                this.refreshList();
+            }
         },
         slotchange() {
             // 更新月份信息
@@ -20,6 +67,38 @@ Component(async (load) => {
             this.reloadAmount();
         },
         proto: {
+            refreshList() {
+                let { sTime, sType, sCate } = $("left-pannel");
+
+                this.queAll('poc-tr').forEach((tr, rowId) => {
+                    if (rowId === 0) {
+                        return
+                    }
+
+                    let show = true;
+
+                    // 月份筛选
+                    let date = new Date(parseInt(tr[1].val));
+                    let monthTime = date.getFullYear() + "-" + (date.getMonth() + 1);
+                    if (sTime != "all" && sTime != monthTime) {
+                        show = false;
+                    }
+
+                    if (sCate != "all" && sCate != tr[2].val) {
+                        show = false;
+                    }
+
+                    // 类型筛选
+                    if (sType != "all" && sType != tr[0].val) {
+                        show = false;
+                    }
+
+                    tr.attrs.hide = show ? "" : "true";
+                });
+
+                // 更新统计数据
+                this.reloadAmount();
+            },
             // 专用导入csv数据的方法
             importCSV(csvData) {
                 // 匹配单行

@@ -32,43 +32,6 @@ ofa = async () => {
 
     $("left-pannel").importCategory(categories_text);
 
-    // 监听pannel变动
-    const pannelChange = () => {
-        let { sTime, sType, sCate } = $("left-pannel");
-
-        $("poc-table").queAll('poc-tr').forEach((tr, rowId) => {
-            if (rowId === 0) {
-                return
-            }
-
-            let show = true;
-
-            // 月份筛选
-            let date = new Date(parseInt(tr[1].val));
-            let monthTime = date.getFullYear() + "-" + (date.getMonth() + 1);
-            if (sTime != "all" && sTime != monthTime) {
-                show = false;
-            }
-
-            if (sCate != "all" && sCate != tr[2].val) {
-                show = false;
-            }
-
-            // 类型筛选
-            if (sType != "all" && sType != tr[0].val) {
-                show = false;
-            }
-
-            tr.attrs.hide = show ? "" : "true";
-        });
-
-        // 更新统计数据
-        $("poc-table").reloadAmount();
-    }
-    $("left-pannel").watch("sTime", pannelChange);
-    $("left-pannel").watch("sType", pannelChange);
-    $("left-pannel").watch("sCate", pannelChange);
-
     $("left-pannel").on("addItem", (e, data) => {
         // 添加新项目
         let { fType, fTime, fCate, fAmount } = data;
@@ -91,34 +54,6 @@ ofa = async () => {
         }, 300);
     });
 
-    // 改变排序
-    $("left-pannel").watch("sortType", (e, sortType) => {
-        console.log("sortType => ", sortType);
-        setTimeout(() => {
-            $("poc-table").display = "none";
-            switch (sortType) {
-                case "time":
-                    $("poc-table").forEach((tr, i) => {
-                        if (i == 0) return;
-
-                        tr.style.order = parseInt(tr[1].val / 86400000);
-                    });
-                    break;
-                case "timeRev":
-                    $("poc-table").forEach((tr, i) => {
-                        if (i == 0) return;
-
-                        tr.style.order = -parseInt(tr[1].val / 86400000);
-                    });
-
-                    break;
-                default:
-                    $("poc-table").forEach((tr, i) => {
-                        if (i == 0) return;
-                        tr.style.order = null
-                    });
-            }
-            $("poc-table").display = "";
-        }, 100);
-    }, true);
+    // 改数据同步
+    $("left-pannel").sync($('poc-table'), ["sortType", "sTime", "sType", "sCate"], true);
 }
