@@ -3,6 +3,8 @@ Component(async (load) => {
         tag: "left-pannel",
         temp: true,
         data: {
+            // state
+            category: {},
             // 排序类型
             sortType: "default",
             // 类型
@@ -11,13 +13,24 @@ Component(async (load) => {
             sTime: "all",
             // 类别
             sCate: "all",
-            // 一下为表单属性
+            // 以下为表单提交数据，表单模块可以单独抽离出去
             fType: "",
             fTime: "",
             fCate: "",
             fAmount: ""
         },
         watch: {
+            category(e, category) {
+                category.forEach(e => {
+                    let { cid, ctype, cname } = e;
+                    this.$cateEle.push(`<option value="${cid}" data-type="${ctype}">${cname}</option>`);
+                    this.$cateSelector.push(`<option value="${cid}" data-type="${ctype}">${cname}</option>`);
+                });
+
+                $.nextTick(() => {
+                    this.fCate = "";
+                });
+            },
             fType(e, fType) {
                 if (fType === "") {
                     $.nextTick(e => this.$cateSelector.forEach(opt => opt.display = "none"))
@@ -43,20 +56,20 @@ Component(async (load) => {
                 });
             },
             // 添加类别数据
-            importCategory(categoryData) {
-                categoryData.split(/\n/g).forEach((e, i) => {
-                    if (i == 0) return;
+            // importCategory(categoryData) {
+            //     categoryData.split(/\n/g).forEach((e, i) => {
+            //         if (i == 0) return;
 
-                    let [cid, ctype, cname] = e.split(",");
+            //         let [cid, ctype, cname] = e.split(",");
 
-                    this.$cateEle.push(`<option value="${cid}" data-type="${ctype}">${cname}</option>`);
-                    this.$cateSelector.push(`<option value="${cid}" data-type="${ctype}">${cname}</option>`);
-                });
+            //         this.$cateEle.push(`<option value="${cid}" data-type="${ctype}">${cname}</option>`);
+            //         this.$cateSelector.push(`<option value="${cid}" data-type="${ctype}">${cname}</option>`);
+            //     });
 
-                $.nextTick(() => {
-                    this.fCate = "";
-                });
-            },
+            //     $.nextTick(() => {
+            //         this.fCate = "";
+            //     });
+            // },
             // 添加新账单
             addItem() {
                 let { fType, fTime, fCate, fAmount } = this;

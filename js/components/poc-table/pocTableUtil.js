@@ -1,32 +1,15 @@
 // td具体转换模块
 define(() => {
-
     const categoryMap = new Map();
 
     return {
         // 初始化Category的方法
         initCategory(category) {
-            // 获取分支
-            let groups = category.split(/\n/g);
-
-            groups.forEach((e, g_id) => {
-                if (g_id == 0) {
-                    return;
-                }
-
-                let gData = e.split(/,/g);
-
-                if (categoryMap.has(gData[0])) {
-                    throw {
-                        desc: "category ID 已存在",
-                        id: gData[0]
-                    };
-                }
-
-                categoryMap.set(gData[0], {
-                    id: gData[0],
-                    type: gData[1],
-                    name: gData[2]
+            category.forEach(e => {
+                categoryMap.set(e.cid, {
+                    id: e.cid,
+                    type: e.ctype,
+                    name: e.cname
                 });
             });
         },

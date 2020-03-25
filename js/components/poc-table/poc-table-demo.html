@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>poc-table-demo</title>
+    <script src="../../ofa.js"></script>
+    <script>
+        load("@ofa/markdown -pack", "./poc-table").then(e => {
+            $("poc-table").importCategory();
+        })
+    </script>
+</head>
+
+<body>
+    <xd-md src="./README.md">xd-md test loading...</xd-md>
+    <poc-table>
+        <poc-tr style="order: -1000000;">
+            <poc-td is-head="true" title="type" val="type"></poc-td>
+            <poc-td is-head="true" title="time" val="time"></poc-td>
+            <poc-td is-head="true" title="category" val="category"></poc-td>
+            <poc-td is-head="true" title="amount" val="amount"></poc-td>
+        </poc-tr>
+        <poc-tr style="background-color: rgba(255, 0, 0, 0.04);" hide="">
+            <poc-td type="TYPE" title="0" val="0"></poc-td>
+            <poc-td type="TIME" title="1561910400000" val="1561910400000"></poc-td>
+            <poc-td type="CATEGORY" title="8s0p77c323" val="8s0p77c323"></poc-td>
+            <poc-td style="color: rgb(228, 9, 9);" type="AMOUNT" title="5400" val="5400"></poc-td>
+        </poc-tr>
+        <poc-tr style="background-color: rgba(0, 255, 0, 0.04);" hide="">
+            <poc-td type="TYPE" title="1" val="1"></poc-td>
+            <poc-td type="TIME" title="1567180800000" val="1567180800000"></poc-td>
+            <poc-td type="CATEGORY" title="s73ijpispio" val="no"></poc-td>
+            <poc-td style="color: rgb(6, 185, 6);" type="AMOUNT" title="28000" val="28000">
+            </poc-td>
+        </poc-tr>
+    </poc-table>
+</body>
+
+</html>

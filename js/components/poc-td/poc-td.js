@@ -15,9 +15,10 @@ Component(async (load) => {
             valueText: ""
         },
         attrs: ["isHead", "type", "val"],
-        proto: {},
-        watch: {
-            val(e, value) {
+        proto: {
+            reVal() {
+                let value = this.val;
+
                 if (!this.isHead) {
                     // 最终显示的文本值
                     this.valueText = pocTrans(value, this.type);
@@ -26,6 +27,11 @@ Component(async (load) => {
                 }
 
                 this.attrs.title = value;
+            }
+        },
+        watch: {
+            val(e, value) {
+                this.reVal();
             }
         }
     }

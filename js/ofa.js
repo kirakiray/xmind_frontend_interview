@@ -4455,6 +4455,72 @@
 
     let globalcss = "";
 
+    const CURRENTS = Symbol("currentPages");
+    const APPNAVIGATE = "_navigate";
+
+    // xd-app路由器初始化
+    const initRouter = (app) => {
+        // 监听跳转
+        app.on("navigate", (e, opt) => {
+            if (!app.router) {
+                return;
+            }
+            let defs = {
+                xdapp: 1,
+                src: opt.src,
+                data: opt.data,
+                pageId: opt.target.pageId
+            };
+            switch (opt.type) {
+                case "to":
+                    if (opt.forward) {
+                        // 通过前进路由进入的页面
+                        history.replaceState(defs, opt.src, `?__page=${encodeURIComponent(opt.src)}`);
+                    } else {
+                        history.pushState(defs, opt.src, `?__page=${encodeURIComponent(opt.src)}`);
+                    }
+                    break;
+                case "replace":
+                    history.replaceState(defs, opt.src, `?__page=${encodeURIComponent(opt.src)}`);
+                    break;
+            }
+            console.log(`navigate to => `, e);
+        });
+
+        window.addEventListener("popstate", e => {
+            if (!app.router) {
+                return;
+            }
+
+            let {
+                state
+            } = e;
+
+            let {
+                currentPages
+            } = app;
+
+            let targetIndex = currentPages.findIndex(e => e.pageId === state.pageId);
+
+            if (targetIndex > -1) {
+                // 返回操作
+                app[APPNAVIGATE]({
+                    type: "back",
+                    delta: currentPages.length - targetIndex - 1
+                });
+            } else {
+                // 不存在的页面，属于前进路由，跳转新页面
+                app[APPNAVIGATE]({
+                    src: state.src,
+                    forward: true
+                });
+            }
+
+            // 判断是否前一页的数据
+            console.log(`state => `, e);
+        });
+    }
+
     drill.ext(base => {
         let {
             loaders,
@@ -4655,13 +4721,53 @@
                             console.warn("no app =>", this);
                             return;
                         }
-                        opts.self = this;
-                        return app._navigate(opts);
+
+                        if (app.router && opts.type === "back") {
+                            let delta = -1;
+                            if (opts.delta) {
+                                delta = -opts.delta;
+                            }
+                            history.go(delta);
+                            return true;
+                        }
+
+                        let defs = {
+                            src: ""
+                        };
+
+                        switch (getType(opts)) {
+                            case "object":
+                                Object.assign(defs, opts);
+                                break;
+                            case "string":
+                                defs.src = opts;
+                                break;
+                        }
+                        defs.self = this;
+
+                        let relativeSrc = this.src;
+
+                        if (relativeSrc) {
+                            // 去掉后面的参数
+                            let urlStrArr = /(.+\/)(.+)/.exec(relativeSrc);
+                            let src = defs.src;
+
+                            if (urlStrArr) {
+                                let obj = main.toUrlObjs([src], urlStrArr[1]);
+                                obj && (obj = obj[0]);
+                                src = obj.ori;
+                                obj.search && (src += ".js?" + obj.search);
+                            }
+                            defs.src = src;
+                        }
+
+                        return app[APPNAVIGATE](defs);
                     },
                     // 页面返回
-                    back() {
+                    back(delta) {
                         return this.navigate({
-                            type: "back"
+                            type: "back",
+                            delta
                         });
                     }
                 },
@@ -4845,13 +4951,9 @@
                     return $page.parents("xd-app")[0];
                 }
             });
-            const APPSTAT = Symbol("appStat");
-            const CURRENTS = Symbol("currentPages");
-
             $.register({
                 tag: "xd-app",
                 data: {
-                    src: "",
                     // 默认page数据
                     _pageParam: {
                         // 后退中的page的样式
@@ -4860,22 +4962,22 @@
                         current: "active",
                         front: "front",
                     },
-                    _appOptions: {},
+                    // _appOptions: {},
                     // 是否已经launched
                     launched: false,
                     // 当前app是否隐藏
-                    visibility: document.hidden ? "hide" : "show"
+                    visibility: document.hidden ? "hide" : "show",
+                    // 是否打开路由
+                    router: 0
                 },
+                attrs: ["router"],
                 proto: {
+                    // 页面参数，动画的数据存储对象
                     get pageParam() {
                         return this._pageParam;
                     },
                     set pageParam(val) {
                         this._pageParam = val;
-                    },
-                    // 当前装填
-                    get stat() {
-                        return this[APPSTAT];
                     },
                     // 选中的页面
                     get currentPage() {
@@ -4887,7 +4989,7 @@
                     },
                     // 跳转路由
                     // 外部请使用page上的navigate传参
-                    _navigate(opts) {
+                    [APPNAVIGATE](opts) {
                         let defaults = {
                             // 当前页面
                             self: "",
@@ -4902,19 +5004,12 @@
                             // 相应的page元素
                             target: "",
                             // 自定义数据
-                            data: null
+                            data: null,
+                            // 是否前进路由
+                            // forward: false
                         };
 
-                        let optsType = getType(opts);
-
-                        switch (optsType) {
-                            case "object":
-                                Object.assign(defaults, opts);
-                                break;
-                            case "string":
-                                defaults.src = opts;
-                                break;
-                        }
+                        Object.assign(defaults, opts);
 
                         return new Promise(async (res, rej) => {
                             switch (defaults.type) {
@@ -4951,8 +5046,6 @@
                                         // 修正样式
                                         prevPage.attrs["xd-page-anime"] = current;
                                         currentPage.attrs["xd-page-anime"] = front;
-                                        // prevPage.attr("xd-page-anime", current);
-                                        // currentPage.attr("xd-page-anime", front);
 
                                         // 去掉前一页
                                         let needRemovePages = currentPages.splice(len - delta, delta);
@@ -4960,6 +5053,8 @@
                                             needRemovePages.forEach(page => page.remove());
                                             res();
                                         }, 300);
+                                    } else {
+                                        return;
                                     }
                                     break;
                                 case "replace":
@@ -4969,7 +5064,7 @@
                                     let selfIndex = this[CURRENTS].indexOf(defaults.self);
                                     let finnalDetal = this[CURRENTS].length - selfIndex - 1;
                                     if (defaults.self && finnalDetal > 0) {
-                                        await this._navigate({
+                                        await this[APPNAVIGATE]({
                                             type: "back",
                                             delta: finnalDetal
                                         });
@@ -4981,27 +5076,11 @@
                                             src
                                         } = defaults;
 
-                                        // 相对路径
-                                        let relativeSrc = defaults.self && defaults.self.src;
-
-                                        if (relativeSrc) {
-                                            // 去掉后面的参数
-                                            let urlStrArr = /(.+\/)(.+)/.exec(relativeSrc);
-
-                                            if (urlStrArr) {
-                                                let obj = main.toUrlObjs([src], urlStrArr[1]);
-                                                obj && (obj = obj[0]);
-                                                src = obj.ori;
-                                                obj.search && (src += ".js?" + obj.search);
-                                            }
-                                        }
-
                                         // 新建page
                                         let pageEle = defaults.target = $({
                                             tag: "xd-page",
                                             src
                                         });
-
 
                                         pageEle[NAVIGATEDATA] = defaults.data;
 
@@ -5013,17 +5092,14 @@
                                             front,
                                             current
                                         } = pageEle.pageParam;
-                                        // pageEle.attr("xd-page-anime", front);
                                         pageEle.attrs["xd-page-anime"] = front;
 
                                         // 后装载
-                                        // setTimeout(() => {
-                                        //     pageEle.attr("xd-page-anime", current);
-                                        // }, 10);
-                                        $.nextTick(() => {
+                                        // $.nextTick(() => {
+                                        // safari需要一点延迟
+                                        setTimeout(() => {
                                             pageEle.attrs["xd-page-anime"] = current;
-                                            // pageEle.attr("xd-page-anime", current);
-                                        });
+                                        }, 34);
 
                                         // 旧页面后退
                                         let beforePage = this.currentPage;
@@ -5031,7 +5107,6 @@
                                             back
                                         } = beforePage.pageParam;
                                         beforePage.attrs["xd-page-anime"] = back[0];
-                                        // beforePage.attr("xd-page-anime", back[0]);
 
                                         // 装载当前页
                                         this[CURRENTS].push(pageEle);
@@ -5054,31 +5129,47 @@
                         });
                     },
                     back(delta = 1) {
-                        return this._navigate({
-                            type: "back",
-                            delta
-                        });
+                        this.currentPage.back(delta);
                     }
                 },
                 watch: {},
                 ready() {
-                    this[APPSTAT] = "unload";
-
                     // 判断是否有页面，激活当前页
                     $.nextTick(() => {
                         let firstPage = this.que("xd-page");
 
-                        // 添加首页，并激活
-                        firstPage && (this[CURRENTS] = [firstPage]);
+                        let readyFun = () => {
+                            this[CURRENTS] = [firstPage];
 
-                        // 触发事件
-                        this.launched = true;
+                            // 触发事件
+                            this.launched = true;
+
+                            readyFun = null;
+
+                            let {
+                                currentPage
+                            } = this;
+                            history.replaceState({
+                                xdapp: 1,
+                                src: currentPage.src,
+                                top: true,
+                                pageId: currentPage.pageId
+                            }, currentPage.src, `?__page=${encodeURIComponent(currentPage.src)}`);
+                        }
+
+                        firstPage ? readyFun() : this.one("page-ready", readyFun);
                     });
 
                     // 检查页面状况
                     window.addEventListener("visibilitychange", e => {
                         this.visibility = document.hidden ? "hide" : "show";
                     });
+
+                    // 添加路由
+                    initRouter(this);
+
+                    // 获取当前的url
+
                 }
             });
         })
